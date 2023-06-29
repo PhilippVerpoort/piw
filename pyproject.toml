@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "piw"
+description = "PIK Interactive Webapp Library"
+version = "0.1.0"
+authors = ["Philipp Verpoort <philipp.verpoort@pik-potsdam.de>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
