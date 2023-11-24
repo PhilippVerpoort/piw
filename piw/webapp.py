@@ -168,6 +168,9 @@ class Webapp(ABC):
             raise Exception(f"Illegal format option found. Allowed: "
                             f"{', '.join(ALLOWED_EXPORT_FORMATS)}. Found: '{export_formats}'.")
 
+        # set plotly template
+        self._set_template()
+
         # load input data
         self._load_def_inputs()
         inputs = self._def_inputs
