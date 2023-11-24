@@ -18,7 +18,7 @@ from piw.template import piw_template
 
 class Webapp(ABC):
     def __init__(self, piwID: str, title: str, desc: Optional[str] = None, authors: Optional[list[str]] = None,
-                 date: Optional[str] = None, pages: Optional[dict[str, str]] = None,
+                 root_path: str = '/', date: Optional[str] = None, pages: Optional[dict[str, str]] = None,
                  links: Optional[dict[str, str]] = None, load: Optional[list[Callable]] = None,
                  ctrls: Optional[list[Callable]] = None, update: Optional[list[Callable]] = None,
                  generate_args: Optional[list[Input | State]] = None, proc: Optional[list[Callable]] = None,
@@ -28,6 +28,8 @@ class Webapp(ABC):
         # check arguments are valid
         if not isinstance(piwID, str) or not re.match(r"^[a-z]+(-[a-z]+)*$", piwID):
             raise Exception(f"Argument 'piwID' of class Webapp has to be a string containing only lowercase letters, potentially separated by single hyphens (e.g. 'name-of-app').")
+        if not isinstance(root_path, str) or not root_path.startswith('/') or not root_path.endswith('/'):
+            raise Exception(f"Arguement 'root_path' of class Webapp has to be a string and start and end with a '/'.")
         if not isinstance(title, str):
             raise Exception(f"Argument 'title' of class Webapp has to be a string.")
         if not (desc is None or isinstance(desc, str)):
@@ -63,6 +65,7 @@ class Webapp(ABC):
 
         # save constructor arguments as class fields
         self._piwID: str = piwID
+        self._rootPath: str = root_path
         self._title: str = title
         self._desc: Optional[str] = desc
         self._authors: Optional[list[str]] = authors
@@ -126,7 +129,7 @@ class Webapp(ABC):
                      self._title, self._desc, self._authors, self._date, self._defInputs)
 
         # set callback
-        setCallbacks(self._dashApp, self._plots, subfigPlotsInit, self._generateArgs, self._defInputs, self._update, self.display)
+        setCallbacks(self._dashApp, self._plots, subfigPlotsInit, self._generateArgs, self._defInputs, self._update, self.display, self._rootPath)
 
     # run app locally
     def run(self):
@@ -219,6 +222,8 @@ class Webapp(ABC):
             title=self._title,
             external_stylesheets=[dbc.themes.BOOTSTRAP, 'assets/base.css', 'assets/piw.css'],
             meta_tags=[{'name': 'viewport', 'content': 'width=device-width, initial-scale=1'}],
+            requests_pathname_prefix=self._rootPath,
+            routes_pathname_prefix='/',
         )
 
         # turn on debug if requested

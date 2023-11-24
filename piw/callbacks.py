@@ -13,10 +13,16 @@ from piw.abstract_plot import AbstractPlot
 ASSETS = Path(__file__).parent / 'assets'
 
 def setCallbacks(dash_app: Dash, plots: list[AbstractPlot], subfigPlotsInit: dict, generateArgs: list,
-                 def_inputs: dict, update: list[Callable], display: Callable):
+                 def_inputs: dict, update: list[Callable], display: Callable, root_path: str):
     # create lists containing all figNames and subfigNames
     figNames = [figName for plot in plots for figName in plot.figs]
     subfigNames = [subfigName for plot in plots for subfigName in plot.subfigs]
+
+    # helper function for stripping root path off routes
+    def _strip_route(route: str) -> str:
+        if not route.startswith(root_path):
+            raise Exception('Error in route: does not start with root path.')
+        return route[len(root_path):]
 
     # serving asset files
     @dash_app.server.route('/assets/<path>')
@@ -32,8 +38,10 @@ def setCallbacks(dash_app: Dash, plots: list[AbstractPlot], subfigPlotsInit: dic
         show = {}
         hide = {'display': 'none'}
 
+        route = _strip_route(route)
+
         return [
-            show if route.lstrip('/') in figSpecs['display'] else hide
+            show if route in figSpecs['display'] else hide
             for plot in plots
             for figName, figSpecs in plot.figs.items()
         ]
@@ -44,7 +52,7 @@ def setCallbacks(dash_app: Dash, plots: list[AbstractPlot], subfigPlotsInit: dic
         [*generateArgs,
          State('url', 'pathname'), ])
     def callbackUpdate(*args):
-        route = args[-1]
+        route = _strip_route(args[-1])
 
         if not ctx.triggered:
             # load default figures for initial display
@@ -66,7 +74,7 @@ def setCallbacks(dash_app: Dash, plots: list[AbstractPlot], subfigPlotsInit: dic
                 figName
                 for plot in plots
                 for figName, figSpecs in plot.figs.items()
-                if route.lstrip('/') in figSpecs['display']
+                if route in figSpecs['display']
             ]
 
             # get figures

@@ -21,7 +21,7 @@ def createLayout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], c
         html.Div(
             dcc.Link(
                 pageName,
-                href=pagePath,
+                href=dash_app.get_relative_path(f"/{pagePath}"),
                 className='mainlink',
             ),
             className='app-modes',
