@@ -78,7 +78,7 @@ class Webapp(ABC):
         self._generateArgs: list[Input | State] = generate_args if generate_args is not None else []
         self._proc: list[Callable] = proc if proc is not None else []
         self._globCfg: dict = glob_cfg if glob_cfg is not None else {}
-        self._plots: list[AbstractPlot] = [Plot(self._globCfg) for Plot in plots] if plots is not None else []
+        self._plots: list[Type[AbstractPlot]] = [Plot(self._globCfg) for Plot in plots] if plots is not None else []
         self._output: Path = Path.cwd() if output is None else Path(output) if isinstance(output, str) else output
         self._sortFigs: Optional[list] = sort_figs
         self._inputCaching: bool = input_caching

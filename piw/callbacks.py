@@ -1,6 +1,6 @@
 from copy import deepcopy
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Type
 
 from dash import Dash
 from dash import callback_context as ctx
@@ -12,7 +12,7 @@ from piw.abstract_plot import AbstractPlot
 
 ASSETS = Path(__file__).parent / 'assets'
 
-def setCallbacks(dash_app: Dash, plots: list[AbstractPlot], subfigPlotsInit: dict, generateArgs: list,
+def setCallbacks(dash_app: Dash, plots: list[Type[AbstractPlot]], subfigPlotsInit: dict, generateArgs: list,
                  def_inputs: dict, update: list[Callable], display: Callable, root_path: str):
     # create lists containing all figNames and subfigNames
     figNames = [figName for plot in plots for figName in plot.figs]
