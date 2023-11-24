@@ -1,4 +1,4 @@
-from typing import Optional, Type
+from typing import Optional, Final
 
 from dash import Dash, html, dcc
 import dash_bootstrap_components as dbc
@@ -7,39 +7,41 @@ from piw.abstract_plot import AbstractPlot
 
 
 # default app links in upper right corner
-DEFLINKS = {
-    'Impressum': 'https://interactive.pik-potsdam.de/impressum',
+DEFLINKS: Final[dict[str, str]] = {
+    'Imprint': 'https://interactive.pik-potsdam.de/imprint',
     'Accessibility': 'https://interactive.pik-potsdam.de/accessibility',
     'Privacy policy': 'https://interactive.pik-potsdam.de/privacy-policy',
 }
 
+
 # create app layout
-def createLayout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], ctrls: list, plots: list[Type[AbstractPlot]], sort_figs: Optional[list],
-                 title: str, desc: Optional[str], authors: Optional[list[str]], date: Optional[str], def_inputs: dict):
+def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], ctrls: list,
+                  plots: list[AbstractPlot], sort_figs: Optional[list], title: str, desc: Optional[str],
+                  authors: Optional[list[str]], date: Optional[str], def_inputs: dict):
     # define page tabs
-    pageDivs = [
+    page_divs = [
         html.Div(
             dcc.Link(
-                pageName,
-                href=dash_app.get_relative_path(f"/{pagePath}"),
-                className='mainlink',
+                page_name,
+                href=dash_app.get_relative_path(f"/{page_path}"),
+                className='nav-link',
             ),
             className='app-modes',
         )
-        for pagePath, pageName in pages.items()
+        for page_path, page_name in pages.items()
     ] if len(pages) > 1 else []
 
     # define links in upper right corner
     links = links if links is not None else DEFLINKS
-    linkDivs = [
+    link_divs = [
         html.Div(
             dcc.Link(
-                linkName,
-                href=linkHref,
-                className='mainlink',
+                link_name,
+                href=link_href,
+                className='nav-link',
             ),
         )
-        for linkName, linkHref in links.items()
+        for link_name, link_href in links.items()
     ]
 
     # define summary card
@@ -65,12 +67,12 @@ def createLayout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], c
     )
 
     # define control cards
-    ctrlDivs = []
+    ctrl_divs = []
     for c in ctrls:
-        ctrlDivs.extend(c(def_inputs))
+        ctrl_divs.extend(c(def_inputs))
 
     # define modal window for updating plot configs
-    plotConfigModal = dbc.Modal(
+    plot_config_modal = dbc.Modal(
         [
             dbc.ModalHeader('Update plot config'),
             dbc.ModalBody(
@@ -109,12 +111,12 @@ def createLayout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], c
                                 html.B(title),
                                 className='app-title',
                             ),
-                            *pageDivs,
+                            *page_divs,
                         ],
                         className='header-left-side',
                     ),
                     html.Div(
-                        children=linkDivs,
+                        children=link_divs,
                         className='header-right-side',
                     ),
                 ],
@@ -124,18 +126,18 @@ def createLayout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], c
             html.Div(
                 id='left-column',
                 className='four columns',
-                children=[summary] + ctrlDivs
+                children=[summary] + ctrl_divs
             ),
 
             # right column
             html.Div(
                 id='right-column',
                 className='eight columns',
-                children=figureCards(plots, sort_figs),
+                children=figure_cards(plots, sort_figs),
             ),
 
             # modals
-            plotConfigModal,
+            plot_config_modal,
 
             # dcc locations, stores, and downloads
             dcc.Location(id='url', refresh=False),
@@ -143,59 +145,60 @@ def createLayout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], c
         ],
     )
 
+
 # create all figure cards
-def figureCards(plots: list[Type[AbstractPlot]], sort_figs: Optional[list]):
+def figure_cards(plots: list[AbstractPlot], sort_figs: Optional[list]):
     cards = {}
 
     for Plot in plots:
-        for figName, figSpecs in Plot.figs.items():
-            if 'subfigs' in figSpecs:
+        for fig_name, fig_specs in Plot.figs.items():
+            if 'subfigs' in fig_specs:
                 subfigs = [
                     (subfigName, subfigSpecs['size']['webapp']['height'], subfigSpecs['size']['webapp']['width'])
-                    for subfigName, subfigSpecs in figSpecs['subfigs'].items()
+                    for subfigName, subfigSpecs in fig_specs['subfigs'].items()
                 ]
             else:
-                subfigs = [(figName, figSpecs['size']['webapp']['height'], figSpecs['size']['webapp']['width'])]
+                subfigs = [(fig_name, fig_specs['size']['webapp']['height'], fig_specs['size']['webapp']['width'])]
 
-            displayDefault = '' in figSpecs['display']
+            display_default = '' in fig_specs['display']
 
-            cards[figName] = html.Div(
-                id=f"card-{figName}",
+            cards[fig_name] = html.Div(
+                id=f"card-{fig_name}",
                 className='fig-card',
                 children=[
                     *(
                         dcc.Loading(
                             children=[
                                 dcc.Graph(
-                                    id=subFigName,
+                                    id=sub_fig_name,
                                     style={
-                                        'height': subFigHeight,
-                                        'width': f"{subFigWidth}%",
+                                        'height': sub_fig_height,
+                                        'width': f"{sub_fig_width}%",
                                         'float': 'left',
                                     },
                                 ),
                             ],
                             type='circle',
                             style={
-                                'height': subFigHeight,
-                                'width': f"{subFigWidth}%",
+                                'height': sub_fig_height,
+                                'width': f"{sub_fig_width}%",
                                 'float': 'left',
                             },
                         )
-                        for subFigName, subFigHeight, subFigWidth in subfigs
+                        for sub_fig_name, sub_fig_height, sub_fig_width in subfigs
                     ),
                     html.Hr(),
-                    html.B(f"{figSpecs['name']} | {figSpecs['title']}"),
-                    html.P(figSpecs['desc']),
+                    html.B(f"{fig_specs['name']} | {fig_specs['title']}"),
+                    html.P(fig_specs['desc']),
                     html.Div([
                             html.Hr(),
-                            html.Button(id=f"{figName}-settings", children='Config', n_clicks=0, ),
+                            html.Button(id=f"{fig_name}-settings", children='Config', n_clicks=0, ),
                         ],
-                        id=f"{figName}-settings-div",
+                        id=f"{fig_name}-settings-div",
                         style={'display': 'none'},
                     ),
                 ],
-                style={} if displayDefault else {'display': 'none'},
+                style={} if display_default else {'display': 'none'},
             )
 
     if sort_figs is None:

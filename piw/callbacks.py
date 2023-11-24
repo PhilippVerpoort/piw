@@ -1,6 +1,6 @@
 from copy import deepcopy
 from pathlib import Path
-from typing import Callable, Type
+from typing import Callable
 
 from dash import Dash
 from dash import callback_context as ctx
@@ -12,11 +12,12 @@ from piw.abstract_plot import AbstractPlot
 
 ASSETS = Path(__file__).parent / 'assets'
 
-def setCallbacks(dash_app: Dash, plots: list[Type[AbstractPlot]], subfigPlotsInit: dict, generateArgs: list,
-                 def_inputs: dict, update: list[Callable], display: Callable, root_path: str):
-    # create lists containing all figNames and subfigNames
-    figNames = [figName for plot in plots for figName in plot.figs]
-    subfigNames = [subfigName for plot in plots for subfigName in plot.subfigs]
+
+def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: dict, generate_args: list,
+                  def_inputs: dict, update: list[Callable], display: Callable, root_path: str):
+    # create lists containing all fig_names and subfig_names
+    fig_names = [figName for plot in plots for figName in plot.figs]
+    subfig_names = [subfigName for plot in plots for subfigName in plot.subfigs]
 
     # helper function for stripping root path off routes
     def _strip_route(route: str) -> str:
@@ -26,60 +27,60 @@ def setCallbacks(dash_app: Dash, plots: list[Type[AbstractPlot]], subfigPlotsIni
 
     # serving asset files
     @dash_app.server.route('/assets/<path>')
-    def serveAssets(path: str):
+    def serve_assets(path: str):
         return send_file(ASSETS / path, as_attachment=True)
 
     # show/hide figure cards
     @dash_app.callback(
-        [*(Output(f"card-{figName}", 'style') for figName in figNames)],
+        [*(Output(f"card-{fig_name}", 'style') for fig_name in fig_names)],
         [Input('url', 'pathname')]
     )
-    def showFigCards(route):
+    def show_fig_cards(route):
         show = {}
         hide = {'display': 'none'}
 
         route = _strip_route(route)
 
         return [
-            show if route in figSpecs['display'] else hide
+            show if route in fig_specs['display'] else hide
             for plot in plots
-            for figName, figSpecs in plot.figs.items()
+            for fig_name, fig_specs in plot.figs.items()
         ]
 
     # general callback for (re-)generating plots
     @dash_app.callback(
-        [*(Output(subfigName, 'figure') for subfigName in subfigNames), ],
-        [*generateArgs,
+        [*(Output(subfig_name, 'figure') for subfig_name in subfig_names), ],
+        [*generate_args,
          State('url', 'pathname'), ])
-    def callbackUpdate(*args):
+    def callback_update(*args):
         route = _strip_route(args[-1])
 
         if not ctx.triggered:
             # load default figures for initial display
-            subfigsGenerated = subfigPlotsInit
+            subfigs_generated = subfig_plots_init
         else:
             # get name of button pressed
             try:
-                btnPressed = ctx.triggered[0]['prop_id'].split('.')[0]
+                btn_pressed = ctx.triggered[0]['prop_id'].split('.')[0]
             except Exception:
-                btnPressed = None
+                btn_pressed = None
 
             # get new input and output data
-            inputsUpdated = deepcopy(def_inputs)
+            inputs_updated = deepcopy(def_inputs)
             for u in update:
-                u(inputsUpdated, btnPressed, args)
+                u(inputs_updated, btn_pressed, args)
 
             # get list of figs required
-            figNamesReq = [
-                figName
+            fig_names_req = [
+                fig_name
                 for plot in plots
-                for figName, figSpecs in plot.figs.items()
-                if route in figSpecs['display']
+                for fig_name, fig_specs in plot.figs.items()
+                if route in fig_specs['display']
             ]
 
             # get figures
-            subfigsGenerated = display(inputsUpdated, figNamesReq)
+            subfigs_generated = display(inputs_updated, fig_names_req)
 
         # sort generated subfigs and return
-        subfigsReturn = dict(sorted(subfigsGenerated.items(), key=lambda t: subfigNames.index(t[0])))
-        return *subfigsReturn.values(),
+        subfigs_return = dict(sorted(subfigs_generated.items(), key=lambda t: subfig_names.index(t[0])))
+        return *subfigs_return.values(),
