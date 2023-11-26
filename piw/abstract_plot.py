@@ -8,12 +8,11 @@ inch_per_mm: Final[float] = 0.03937
 
 
 class AbstractPlot(ABC):
-    _cfg: dict = {}
-
-    def __init__(self, glob_cfg: dict):
-        self._glob_cfg: dict = glob_cfg
+    def __init__(self, glob_cfg: Optional[dict], all_styles: Optional[dict]):
+        self._glob_cfg: dict = glob_cfg | {}
+        self._all_styles: dict = all_styles | {}
         self._fig_cfgs: dict = {
-            fig_name: (self._glob_cfg | self._cfg | fig_specs['config'])
+            fig_name: (self._glob_cfg | fig_specs['config'])
             for fig_name, fig_specs in self.figs.items()
         }
 
@@ -44,6 +43,7 @@ class AbstractPlot(ABC):
     def update(self, target: Optional[str] = None, dpi: Optional[float] = None):
         if target is not None:
             self._target = target
+            self._styles = self._all_styles[target] if target in self._all_styles else {}
         if dpi is not None:
             self._dpi = dpi
 

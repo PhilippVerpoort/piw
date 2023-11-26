@@ -13,6 +13,7 @@ import dash_bootstrap_components as dbc
 from piw.abstract_plot import AbstractPlot
 from piw.callbacks import set_callbacks
 from piw.layout import create_layout
+from piw.styles import default_styles
 
 
 # allowed export formats
@@ -26,9 +27,9 @@ class Webapp(ABC):
                  links: Optional[dict[str, str]] = None, load: Optional[list[Callable]] = None,
                  ctrls: Optional[list[Callable]] = None, update: Optional[list[Callable]] = None,
                  generate_args: Optional[list[Input | State]] = None, proc: Optional[list[Callable]] = None,
-                 glob_cfg: Optional[dict] = None, plots: Optional[list[Type[AbstractPlot]]] = None,
-                 output: Optional[str | Path] = None, sort_figs: Optional[list[str]] = None,
-                 default_template: str = 'piw', input_caching: bool = False,
+                 glob_cfg: Optional[dict] = None, styles: Optional[dict] = None,
+                 plots: Optional[list[Type[AbstractPlot]]] = None, output: Optional[str | Path] = None,
+                 sort_figs: Optional[list[str]] = None, default_template: str = 'piw', input_caching: bool = False,
                  input_caching_dir: Optional[str | Path] = None, debug: bool = False):
         # check arguments are valid
         if not (isinstance(piw_id, str) and re.match(r"^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$", piw_id)):
@@ -63,6 +64,11 @@ class Webapp(ABC):
             raise Exception(f"Argument 'proc' of class Webapp has to be a list of callable functions.")
         if not (glob_cfg is None or isinstance(glob_cfg, dict)):
             raise Exception(f"Argument 'globCfg' of class Webapp has to be a dict.")
+        if not (styles is None or isinstance(styles, dict)):
+            raise Exception(f"Argument 'styles' of class Webapp has to be a dict.")
+        if not (plots is not None or (isinstance(plots, list) and
+                                      all(isinstance(p, type(AbstractPlot)) for p in plots))):
+            raise Exception(f"Argument 'plots' must be a list of AbstractPlot objects.")
         if not (output is None or isinstance(output, str) or isinstance(output, Path)):
             raise Exception(f"Argument 'output' of class Webapp has to be a string or Path object containing the "
                             f"output directory for exported plots.")
@@ -93,7 +99,9 @@ class Webapp(ABC):
         self._generate_args: list[Input | State] = generate_args if generate_args is not None else []
         self._proc: list[Callable] = proc if proc is not None else []
         self._glob_cfg: dict = glob_cfg if glob_cfg is not None else {}
-        self._plots: list[AbstractPlot] = [Plot(self._glob_cfg) for Plot in plots] if plots is not None else []
+        self._styles: dict = styles or default_styles
+        self._plots: list[AbstractPlot] = [Plot(self._glob_cfg, self._styles) for Plot in plots] \
+                                          if plots is not None else []
         self._output: Path = Path.cwd() if output is None else Path(output) if isinstance(output, str) else output
         self._sort_figs: Optional[list] = sort_figs
         self._default_template: str = default_template
