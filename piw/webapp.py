@@ -210,18 +210,19 @@ class Webapp(ABC):
             else:
                 raise Exception('Input caching directory does not exist.')
 
+        # load cached inputs from binary file if it exists
         if self._input_caching and self._cache_path.exists():
             with open(self._cache_path, 'rb') as f:
                 self._def_inputs = pickle.load(f)
                 return
 
-        inputs = {}
-
+        # execute all load functions
+        inputs: dict = {}
         for load_func in self._load:
             load_func(inputs)
-
         self._def_inputs = inputs
 
+        # cache inputs in binary file
         if self._input_caching:
             with open(self._cache_path, 'wb') as f:
                 pickle.dump(inputs, f)
