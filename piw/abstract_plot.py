@@ -11,8 +11,13 @@ class AbstractPlot(ABC):
     def __init__(self, glob_cfg: Optional[dict], all_styles: Optional[dict]):
         self._glob_cfg: dict = glob_cfg | {}
         self._all_styles: dict = all_styles | {}
+        self._cfg = self._glob_cfg | self.figs['config'] if 'config' in self.figs else {}
         self._fig_cfgs: dict = {
-            fig_name: (self._glob_cfg | fig_specs['config'])
+            fig_name: (
+                self._glob_cfg |
+                self.figs['config'] if 'config' in self.figs else {} |
+                fig_specs['config'] if 'config' in fig_specs else {}
+            )
             for fig_name, fig_specs in self.figs.items()
         }
 
