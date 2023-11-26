@@ -193,6 +193,8 @@ class Webapp(ABC):
 
             for subfig_name, subfig_plot in subfig_plots.items():
                 size = plot.get_subfig_size(subfig_name)
+                if subfig_plot is None:
+                    continue
                 for file_format in export_formats:
                     subfig_plot.write_image(self._output / f"{subfig_name}.{file_format}", **size)
 
