@@ -154,11 +154,11 @@ def figure_cards(plots: list[AbstractPlot], sort_figs: Optional[list]):
         for fig_name, fig_specs in Plot.figs.items():
             if 'subfigs' in fig_specs:
                 subfigs = [
-                    (subfigName, subfigSpecs['size']['webapp']['height'], subfigSpecs['size']['webapp']['width'])
+                    (subfigName, subfigSpecs['size']['webapp']['width'], subfigSpecs['size']['webapp']['height'])
                     for subfigName, subfigSpecs in fig_specs['subfigs'].items()
                 ]
             else:
-                subfigs = [(fig_name, fig_specs['size']['webapp']['height'], fig_specs['size']['webapp']['width'])]
+                subfigs = [(fig_name, fig_specs['size']['webapp']['width'], fig_specs['size']['webapp']['height'])]
 
             display_default = '' in fig_specs['display']
 
@@ -172,20 +172,20 @@ def figure_cards(plots: list[AbstractPlot], sort_figs: Optional[list]):
                                 dcc.Graph(
                                     id=sub_fig_name,
                                     style={
-                                        'height': sub_fig_height,
                                         'width': f"{sub_fig_width}%",
+                                        'height': sub_fig_height,
                                         'float': 'left',
                                     },
                                 ),
                             ],
                             type='circle',
                             style={
-                                'height': sub_fig_height,
                                 'width': f"{sub_fig_width}%",
+                                'height': sub_fig_height,
                                 'float': 'left',
                             },
                         )
-                        for sub_fig_name, sub_fig_height, sub_fig_width in subfigs
+                        for sub_fig_name, sub_fig_width, sub_fig_height in subfigs
                     ),
                     html.Hr(),
                     html.B(f"{fig_specs['name']} | {fig_specs['title']}"),
