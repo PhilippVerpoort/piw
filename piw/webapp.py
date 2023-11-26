@@ -31,7 +31,7 @@ class Webapp(ABC):
                  default_template: str = 'piw', input_caching: bool = False,
                  input_caching_dir: Optional[str | Path] = None, debug: bool = False):
         # check arguments are valid
-        if not (isinstance(piw_id, str) and re.match(r"^[a-z]+(-[a-z]+)*$", piw_id)):
+        if not (isinstance(piw_id, str) and re.match(r"^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$", piw_id)):
             raise Exception(f"Argument 'piw_id' of class Webapp has to be a string containing only lowercase letters, "
                             f"potentially separated by single hyphens (e.g. 'name-of-app').")
         if not (isinstance(root_path, str) and root_path.startswith('/') and root_path.endswith('/')):
