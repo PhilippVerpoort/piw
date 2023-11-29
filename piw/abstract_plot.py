@@ -8,16 +8,12 @@ inch_per_mm: Final[float] = 0.03937
 
 
 class AbstractPlot(ABC):
-    def __init__(self, glob_cfg: Optional[dict], all_styles: Optional[dict]):
+    def __init__(self, glob_cfg: Optional[dict], styles_by_target: Optional[dict]):
         self._glob_cfg: dict = glob_cfg | {}
-        self._all_styles: dict = all_styles | {}
-        self._cfg = self._glob_cfg | self.figs['config'] if 'config' in self.figs else {}
+        self._styles_by_target: dict = styles_by_target | {}
+
         self._fig_cfgs: dict = {
-            fig_name: (
-                self._glob_cfg |
-                self.figs['config'] if 'config' in self.figs else {} |
-                fig_specs['config'] if 'config' in fig_specs else {}
-            )
+            fig_name: (self.cfg | fig_specs['config'] if 'config' in fig_specs else {})
             for fig_name, fig_specs in self.figs.items()
         }
 
@@ -27,6 +23,11 @@ class AbstractPlot(ABC):
     @property
     @abstractmethod
     def figs(self) -> dict:
+        pass
+
+    @property
+    @abstractmethod
+    def cfg(self) -> dict:
         pass
 
     @property
@@ -48,7 +49,7 @@ class AbstractPlot(ABC):
     def update(self, target: Optional[str] = None, dpi: Optional[float] = None):
         if target is not None:
             self._target = target
-            self._styles = self._all_styles[target] if target in self._all_styles else {}
+            self._styles = self._styles_by_target[target] if target in self._styles_by_target else {}
         if dpi is not None:
             self._dpi = dpi
 
