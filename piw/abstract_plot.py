@@ -8,6 +8,8 @@ inch_per_mm: Final[float] = 0.03937
 
 
 class AbstractPlot(ABC):
+    cfg: dict = {}
+
     def __init__(self, glob_cfg: Optional[dict], styles_by_target: Optional[dict]):
         self._glob_cfg: dict = glob_cfg | {}
         self._styles_by_target: dict = styles_by_target | {}
@@ -23,11 +25,6 @@ class AbstractPlot(ABC):
     @property
     @abstractmethod
     def figs(self) -> dict:
-        pass
-
-    @property
-    @abstractmethod
-    def cfg(self) -> dict:
         pass
 
     _subfigs: dict = None
