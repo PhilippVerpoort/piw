@@ -12,9 +12,9 @@ class AbstractPlot(ABC):
         self._glob_cfg: dict = glob_cfg | {}
         self._styles_by_target: dict = styles_by_target | {}
 
-        self._fig_cfgs: dict = {
-            fig_name: (self.cfg | fig_specs['config'] if 'config' in fig_specs else {})
-            for fig_name, fig_specs in self.figs.items()
+        self._subfig_cfgs: dict = {
+            subfig_name: (self.cfg | subfig_specs['config'] if 'config' in subfig_specs else {})
+            for subfig_name, subfig_specs in self.subfigs.items()
         }
 
         self._target = 'print'
@@ -30,21 +30,25 @@ class AbstractPlot(ABC):
     def cfg(self) -> dict:
         pass
 
+    _subfigs: dict = None
+
     @property
     def subfigs(self) -> dict:
-        sub_specs = ['size']
-        ret = {}
-        for fig_name, fig_specs in self.figs.items():
-            if 'subfigs' in fig_specs:
-                ret |= {
-                    subfig_name: {k: v for k, v in subfig_specs.items() if k in sub_specs} | {'parent': fig_name}
-                    for subfig_name, subfig_specs in fig_specs['subfigs'].items()
-                }
-            else:
-                ret |= {
-                    fig_name: {k: v for k, v in fig_specs.items() if k in sub_specs} | {'parent': fig_name}
-                }
-        return ret
+        if self._subfigs is None:
+            sub_specs = ['size', 'config']
+            self._subfigs = {}
+            for fig_name, fig_specs in self.figs.items():
+                if 'subfigs' in fig_specs:
+                    self._subfigs |= {
+                        subfig_name: {k: v for k, v in subfig_specs.items() if k in sub_specs} | {'parent': fig_name}
+                        for subfig_name, subfig_specs in fig_specs['subfigs'].items()
+                    }
+                else:
+                    self._subfigs |= {
+                        fig_name: {k: v for k, v in fig_specs.items() if k in sub_specs} | {'parent': fig_name}
+                    }
+
+        return self._subfigs
 
     def update(self, target: Optional[str] = None, dpi: Optional[float] = None):
         if target is not None:
