@@ -146,7 +146,7 @@ class Webapp(ABC):
         fig_names_default = [
             figName for plot in self._plots
             for figName, figSpecs in plot.figs.items()
-            if '' in figSpecs['display']
+            if 'display' in figSpecs and '' in figSpecs['display']
         ]
         subfig_plots_init = self.display(self._def_inputs, fig_names_default)
 
