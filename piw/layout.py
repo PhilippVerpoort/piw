@@ -160,7 +160,7 @@ def figure_cards(plots: list[AbstractPlot], sort_figs: Optional[list]):
             else:
                 subfigs = [(fig_name, fig_specs['size']['webapp']['width'], fig_specs['size']['webapp']['height'])]
 
-            display_default = '' in fig_specs['display']
+            display_default = 'display' in fig_specs and '' in fig_specs['display']
 
             cards[fig_name] = html.Div(
                 id=f"card-{fig_name}",

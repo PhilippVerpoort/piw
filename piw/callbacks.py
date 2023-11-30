@@ -42,7 +42,7 @@ def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: 
         route = _strip_route(route)
 
         return [
-            show if route in fig_specs['display'] else hide
+            show if 'display' in fig_specs and route in fig_specs['display'] else hide
             for plot in plots
             for fig_name, fig_specs in plot.figs.items()
         ]
@@ -75,7 +75,7 @@ def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: 
                 fig_name
                 for plot in plots
                 for fig_name, fig_specs in plot.figs.items()
-                if route in fig_specs['display']
+                if 'display' in fig_specs and route in fig_specs['display']
             ]
 
             # get figures
