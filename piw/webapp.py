@@ -111,14 +111,18 @@ class Webapp(ABC):
         self._proc: list[Callable] = proc if proc is not None else []
         self._glob_cfg: dict = glob_cfg if glob_cfg is not None else {}
         self._styles: dict = styles or default_styles
-        self._plots: list[AbstractPlot] = [Plot(self._glob_cfg, self._styles) for Plot in plots] \
-                                          if plots is not None else []
+        self._plots: list[AbstractPlot] = ([Plot(self._glob_cfg, self._styles) for Plot in plots]
+                                           if plots is not None else
+                                           [])
         self._output: Path = Path.cwd() if output is None else Path(output) if isinstance(output, str) else output
         self._sort_figs: Optional[list] = sort_figs
         self._default_template: str = default_template
         self._input_caching: bool = input_caching
-        self._input_caching_dir: Path = Path.cwd() if input_caching_dir is None else Path(input_caching_dir) \
-                                                   if isinstance(input_caching_dir, str) else input_caching_dir
+        self._input_caching_dir: Path = (Path.cwd()
+                                         if input_caching_dir is None else
+                                         Path(input_caching_dir)
+                                         if isinstance(input_caching_dir, str) else
+                                         input_caching_dir)
         self._debug: bool = debug
 
     @property
