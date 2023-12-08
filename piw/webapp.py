@@ -187,6 +187,7 @@ class Webapp(ABC):
         outputs = self._proc_inputs(inputs)
 
         # plot
+        self._output.mkdir(parents=True, exist_ok=True)
         for plot in self._plots:
             plot.update(target='print', dpi=dpi)
             subfig_plots = plot.produce(inputs, outputs, fig_names)
