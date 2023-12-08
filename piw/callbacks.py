@@ -14,7 +14,8 @@ ASSETS = Path(__file__).parent / 'assets'
 
 
 def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: dict, generate_args: list,
-                  def_inputs: dict, update: list[Callable], display: Callable, root_path: str):
+                  def_inputs: dict, ctrls_tables_modal: dict[str, list[str]], update: list[Callable],
+                  display: Callable, root_path: str):
     # create lists containing all fig_names and subfig_names
     fig_names = [figName for plot in plots for figName in plot.figs]
     subfig_names = [subfigName for plot in plots for subfigName in plot.subfigs]
@@ -84,3 +85,46 @@ def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: 
         # sort generated subfigs and return
         subfigs_return = dict(sorted(subfigs_generated.items(), key=lambda t: subfig_names.index(t[0])))
         return *subfigs_return.values(),
+
+    # callback for updating tables in controls
+    @dash_app.callback(
+        [*(Output(t, 'data') for t in ctrls_tables_modal),
+         Output('ctrl-tables-modal', 'is_open'),
+         Output('ctrl-tables-modal-open', 'data'),
+         Output('ctrl-tables-modal-textfield', 'value'),],
+        [*(Input(t, 'active_cell') for t in ctrls_tables_modal),
+         Input('ctrl-tables-modal-ok', 'n_clicks'),
+         Input('ctrl-tables-modal-cancel', 'n_clicks'),],
+        [*(State(t, 'data') for t in ctrls_tables_modal),
+         State('ctrl-tables-modal-textfield', 'value'),
+         State('ctrl-tables-modal-open', 'data'),],
+    )
+    def callback_advanced_modal(*args):
+        active_cell = {p: args[i] for i, p in enumerate(list(ctrls_tables_modal.keys()))}
+        current_data = {p: args[i - len(ctrls_tables_modal) - 2] for i, p in enumerate(list(ctrls_tables_modal.keys()))}
+        text_field_data = args[-2]
+        origin_saved = args[-1]
+
+        if not ctx.triggered:
+            return *current_data.values(), False, '', ''
+        else:
+            origin = ctx.triggered[0]['prop_id'].split('.')[0]
+
+            if origin in ctrls_tables_modal:
+                row = active_cell[origin]['row']
+                col = active_cell[origin]['column_id']
+
+                if col not in ctrls_tables_modal[origin]:
+                    return *current_data.values(), False, '', ''
+                else:
+                    return *current_data.values(), True, origin, str(current_data[origin][row][col])
+            elif origin == 'ctrl-tables-modal-cancel':
+                return *current_data.values(), False, '', ''
+            elif origin == 'ctrl-tables-modal-ok':
+                row = active_cell[origin_saved]['row']
+                col = active_cell[origin_saved]['column_id']
+
+                current_data[origin_saved][row][col] = text_field_data
+                return *current_data.values(), False, '', ''
+            else:
+                raise Exception('Unknown button pressed!')

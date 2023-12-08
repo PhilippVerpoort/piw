@@ -71,24 +71,24 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
     for c in ctrls:
         ctrl_divs.extend(c(def_inputs))
 
-    # define modal window for updating plot configs
-    plot_config_modal = dbc.Modal(
+    # define modal window for editing control tables
+    ctrl_tables_modal = dbc.Modal(
         [
-            dbc.ModalHeader('Update plot config'),
+            dbc.ModalHeader('Update value'),
             dbc.ModalBody(
                 [
-                    dbc.Label('Config:'),
-                    dcc.Textarea(id='plot-config-modal-textfield', style={'width': '100%', 'height': 500}),
+                    dbc.Label('Value:'),
+                    dcc.Textarea(id='ctrl-tables-modal-textfield', style={'width': '100%', 'height': 500}),
                 ]
             ),
             dbc.ModalFooter(
                 [
-                    dbc.Button('OK', color='primary', id='plot-config-modal-ok'),
-                    dbc.Button('Cancel', id='plot-config-modal-cancel'),
+                    dbc.Button('OK', color='primary', id='ctrl-tables-modal-ok'),
+                    dbc.Button('Cancel', id='ctrl-tables-modal-cancel'),
                 ]
             ),
         ],
-        id='plot-config-modal',
+        id='ctrl-tables-modal',
     )
 
     # define full layout
@@ -137,11 +137,11 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
             ),
 
             # modals
-            plot_config_modal,
+            ctrl_tables_modal,
 
-            # dcc locations, stores, and downloads
+            # dcc locations and stores
             dcc.Location(id='url', refresh=False),
-            # dcc.Store(id='plot-cfgs', storage_type='memory', data=plot_cfgs),
+            dcc.Store(id='ctrl-tables-modal-open', storage_type='session', data=''),
         ],
     )
 

@@ -26,6 +26,7 @@ class Webapp(ABC):
                  root_path: str = '/', date: Optional[str] = None, pages: Optional[dict[str, str]] = None,
                  links: Optional[dict[str, str]] = None, load: Optional[list[Callable]] = None,
                  ctrls: Optional[list[Callable]] = None, update: Optional[list[Callable]] = None,
+                 ctrls_tables_modal: Optional[dict[str, list[str]]] = None,
                  generate_args: Optional[list[Input | State]] = None, proc: Optional[list[Callable]] = None,
                  glob_cfg: Optional[dict] = None, styles: Optional[dict] = None,
                  plots: Optional[list[Type[AbstractPlot]]] = None, output: Optional[str | Path] = None,
@@ -60,6 +61,11 @@ class Webapp(ABC):
             raise Exception(f"Argument 'ctrls' of class Webapp has to be a list of callable functions.")
         if not (update is None or (isinstance(update, list) and all(isinstance(f, Callable) for f in update))):
             raise Exception(f"Argument 'update' of class Webapp has to be a list of callable functions.")
+        if not (ctrls_tables_modal is None or
+                (isinstance(ctrls_tables_modal, dict) and all(isinstance(table, str) and isinstance(cols, list) and
+                 all(isinstance(col, str) for col in cols) for table, cols in ctrls_tables_modal.items()))):
+            raise Exception(f"Argument 'ctrls_tables_modal' of class Webapp has to be a dict that maps table IDs onto "
+                            f"lists of column IDs.")
         if not (proc is None or (isinstance(proc, list) and all(isinstance(f, Callable) for f in proc))):
             raise Exception(f"Argument 'proc' of class Webapp has to be a list of callable functions.")
         if not (glob_cfg is None or isinstance(glob_cfg, dict)):
@@ -96,6 +102,7 @@ class Webapp(ABC):
         self._load: list[Callable] = load if load is not None else []
         self._ctrls: list[Callable] = ctrls if ctrls is not None else []
         self._update: list[Callable] = update if update is not None else []
+        self._ctrls_tables_modal: dict[str, list[str]] = ctrls_tables_modal or {}
         self._generate_args: list[Input | State] = generate_args if generate_args is not None else []
         self._proc: list[Callable] = proc if proc is not None else []
         self._glob_cfg: dict = glob_cfg if glob_cfg is not None else {}
@@ -159,7 +166,7 @@ class Webapp(ABC):
 
         # set callback
         set_callbacks(self._dash_app, self._plots, subfig_plots_init, self._generate_args, self._def_inputs,
-                      self._update, self.display, self._root_path)
+                      self._ctrls_tables_modal, self._update, self.display, self._root_path)
 
     # run app locally
     def run(self):
