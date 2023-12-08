@@ -1,16 +1,11 @@
 from copy import deepcopy
-from pathlib import Path
 from typing import Callable
 
 from dash import Dash
 from dash import callback_context as ctx
 from dash.dependencies import Input, Output, State
-from flask import send_file
 
 from piw.abstract_plot import AbstractPlot
-
-
-ASSETS = Path(__file__).parent / 'assets'
 
 
 def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: dict, generate_args: list,
@@ -25,11 +20,6 @@ def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: 
         if not route.startswith(root_path):
             raise Exception('Error in route: does not start with root path.')
         return route[len(root_path):]
-
-    # serving asset files
-    @dash_app.server.route('/assets/<path>')
-    def serve_assets(path: str):
-        return send_file(ASSETS / path, as_attachment=True)
 
     # show/hide figure cards
     @dash_app.callback(

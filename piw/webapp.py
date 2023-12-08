@@ -20,6 +20,10 @@ from piw.styles import default_styles
 ALLOWED_EXPORT_FORMATS: Final[list[str]] = ['png', 'svg', 'pdf']
 
 
+# assets directory
+ASSETS: Final[Path] = Path(__file__).parent / 'assets'
+
+
 # class Webapp
 class Webapp(ABC):
     def __init__(self, piw_id: str, title: str, desc: Optional[str] = None, authors: Optional[list[str]] = None,
@@ -269,10 +273,11 @@ class Webapp(ABC):
         self._dash_app = Dash(
             f"piw--{self._piw_id}",
             title=self._title,
-            external_stylesheets=[dbc.themes.BOOTSTRAP, 'assets/base.css', 'assets/piw.css'],
+            external_stylesheets=[dbc.themes.BOOTSTRAP],
             meta_tags=[{'name': 'viewport', 'content': 'width=device-width, initial-scale=1'}],
             requests_pathname_prefix=self._root_path,
             routes_pathname_prefix='/',
+            assets_folder=str(ASSETS),
         )
 
         # turn on debug if requested
