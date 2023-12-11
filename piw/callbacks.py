@@ -89,7 +89,7 @@ def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: 
          State('ctrl-tables-modal-textfield', 'value'),
          State('ctrl-tables-modal-open', 'data'),],
     )
-    def callback_advanced_modal(*args):
+    def callback_ctrl_tables_modal(*args):
         active_cell = {p: args[i] for i, p in enumerate(list(ctrls_tables_modal.keys()))}
         current_data = {p: args[i - len(ctrls_tables_modal) - 2] for i, p in enumerate(list(ctrls_tables_modal.keys()))}
         text_field_data = args[-2]

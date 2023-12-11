@@ -190,13 +190,6 @@ def figure_cards(plots: list[AbstractPlot], sort_figs: Optional[list]):
                     html.Hr(),
                     html.B(f"{fig_specs['name']} | {fig_specs['title']}"),
                     html.P(fig_specs['desc']),
-                    html.Div([
-                            html.Hr(),
-                            html.Button(id=f"{fig_name}-settings", children='Config', n_clicks=0, ),
-                        ],
-                        id=f"{fig_name}-settings-div",
-                        style={'display': 'none'},
-                    ),
                 ],
                 style={} if display_default else {'display': 'none'},
             )
