@@ -1,6 +1,8 @@
 import pickle
 import re
+import warnings
 from abc import ABC
+from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional, Type, Final
 
@@ -26,11 +28,10 @@ ASSETS: Final[Path] = Path(__file__).parent / 'assets'
 
 # class Webapp
 class Webapp(ABC):
-    def __init__(self, piw_id: str, title: str, desc: Optional[str] = None, authors: Optional[list[str]] = None,
-                 root_path: str = '/', date: Optional[str] = None, pages: Optional[dict[str, str]] = None,
-                 links: Optional[dict[str, str]] = None, load: Optional[list[Callable]] = None,
-                 ctrls: Optional[list[Callable]] = None, update: Optional[list[Callable]] = None,
-                 ctrls_tables_modal: Optional[dict[str, list[str]]] = None,
+    def __init__(self, piw_id: str, metadata: Optional[dict], root_path: str = '/',
+                 pages: Optional[dict[str, str]] = None, links: Optional[dict[str, str]] = None,
+                 load: Optional[list[Callable]] = None, ctrls: Optional[list[Callable]] = None,
+                 update: Optional[list[Callable]] = None, ctrls_tables_modal: Optional[dict[str, list[str]]] = None,
                  generate_args: Optional[list[Input | State]] = None, proc: Optional[list[Callable]] = None,
                  glob_cfg: Optional[dict] = None, styles: Optional[dict] = None,
                  plots: Optional[list[Type[AbstractPlot]]] = None, output: Optional[str | Path] = None,
@@ -42,15 +43,8 @@ class Webapp(ABC):
                             f"potentially separated by single hyphens (e.g. 'name-of-app').")
         if not (isinstance(root_path, str) and root_path.startswith('/') and root_path.endswith('/')):
             raise Exception(f"Argument 'root_path' of class Webapp has to be a string and start and end with a '/'.")
-        if not isinstance(title, str):
-            raise Exception(f"Argument 'title' of class Webapp has to be a string.")
-        if not (desc is None or isinstance(desc, str)):
-            raise Exception(f"Argument 'desc' of class Webapp has to be a string.")
-        if not (authors is None or (isinstance(authors, list) and all(isinstance(a, str) for a in authors))):
-            raise Exception(f"Argument 'authors' of class Webapp has to be a list of strings (one string for each "
-                            f"author name).")
-        if not (date is None or isinstance(date, str)):
-            raise Exception(f"Argument 'date' of class Webapp has to be a string.")
+        if not isinstance(metadata, dict):
+            raise Exception(f"Argument 'metadata' must be a dict.")
         if not (pages is None or (isinstance(pages, dict) and all(isinstance(k, str) for k in pages) and
                                   all(isinstance(v, str) for v in pages.values()))):
             raise Exception(f"Argument 'pages' of class Webapp has to be a dict of strings "
@@ -97,10 +91,7 @@ class Webapp(ABC):
         # save constructor arguments as class fields
         self._piw_id: str = piw_id
         self._root_path: str = root_path
-        self._title: str = title
-        self._desc: Optional[str] = desc
-        self._authors: Optional[list[str]] = authors
-        self._date: Optional[str] = date
+        self._metadata: dict = metadata or {}
         self._pages: dict[str, str] = pages if pages is not None else {'': 'Default'}
         self._links: dict[str, str] = links
         self._load: list[Callable] = load if load is not None else []
@@ -130,10 +121,6 @@ class Webapp(ABC):
         return self._piw_id
 
     @property
-    def title(self) -> str:
-        return self._title
-
-    @property
     def debug(self) -> bool:
         return self._debug
 
@@ -151,6 +138,9 @@ class Webapp(ABC):
 
     # start webapp
     def start(self):
+        # insert missing metadata
+        self._insert_missing_metadata()
+
         # set plotly template
         self._set_template()
 
@@ -169,8 +159,8 @@ class Webapp(ABC):
         self._create_dash_app()
 
         # create app layout
-        create_layout(self._dash_app, self._pages, self._links, self._ctrls, self._plots, self._sort_figs, self._title,
-                      self._desc, self._authors, self._date, self._def_inputs)
+        create_layout(self._dash_app, self._pages, self._links, self._ctrls, self._plots, self._sort_figs,
+                      self._metadata, self._def_inputs)
 
         # set callback
         set_callbacks(self._dash_app, self._plots, subfig_plots_init, self._generate_args, self._def_inputs,
@@ -227,6 +217,24 @@ class Webapp(ABC):
 
         return subfig_plots
 
+    # insert missing metadata
+    def _insert_missing_metadata(self):
+        if 'title' not in self._metadata:
+            self._metadata['title'] = 'No title provided'
+            warnings.warn('No title provided in metadata.')
+        if 'abstract' not in self._metadata:
+            self._metadata['abstract'] = 'No abstract provided'
+            warnings.warn('No abstract provided in metadata.')
+        if 'authors' not in self._metadata:
+            self._metadata['authors'] = []
+            warnings.warn('No authors provided in metadata.')
+        if 'date' not in self._metadata:
+            self._metadata['date'] = datetime.today().strftime('%Y-%m-%d')
+            warnings.warn("No date provided in metadata. Using today's date.")
+        if 'about' not in self._metadata:
+            self._metadata['about'] = 'No about provided.'
+            warnings.warn("No about provided in metadata.")
+
     # load default input data
     def _load_def_inputs(self):
         # set up caching framework
@@ -276,7 +284,7 @@ class Webapp(ABC):
     def _create_dash_app(self):
         self._dash_app = Dash(
             f"piw--{self._piw_id}",
-            title=self._title,
+            title=self._metadata['title'],
             meta_tags=[{'name': 'viewport', 'content': 'width=device-width, initial-scale=1'}],
             requests_pathname_prefix=self._root_path,
             routes_pathname_prefix='/',

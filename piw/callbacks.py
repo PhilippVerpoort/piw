@@ -76,6 +76,15 @@ def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: 
         subfigs_return = dict(sorted(subfigs_generated.items(), key=lambda t: subfig_names.index(t[0])))
         return *subfigs_return.values(),
 
+    # callback for about modal
+    @dash_app.callback(
+        Output('about-modal', 'is_open'),
+        Input('btn-about', 'n_clicks'),
+        prevent_initial_call=True,
+    )
+    def callback_about_modal(*args):
+        return True
+
     # callback for updating tables in controls
     @dash_app.callback(
         [*(Output(t, 'data') for t in ctrls_tables_modal),

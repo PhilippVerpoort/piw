@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, Final
 
 from dash import Dash, html, dcc
@@ -16,8 +17,7 @@ DEFLINKS: Final[dict[str, str]] = {
 
 # create app layout
 def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], ctrls: list,
-                  plots: list[AbstractPlot], sort_figs: Optional[list], title: str, desc: Optional[str],
-                  authors: Optional[list[str]], date: Optional[str], def_inputs: dict):
+                  plots: list[AbstractPlot], sort_figs: Optional[list], metadata: dict, def_inputs: dict):
     # define page tabs
     page_divs = [
         html.Div(
@@ -44,26 +44,118 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
         for link_name, link_href in links.items()
     ]
 
-    # define summary card
-    summary = html.Div(
-        id='summary-card',
+    # define metadata card
+    authors_list = [
+        html.Span(
+            [f"{author['first']} {author['last']}"] +
+            ([] if 'orcid' not in author else
+            [' ', html.A(
+                html.Img(
+                    src='https://info.orcid.org/wp-content/uploads/2020/12/orcid_16x16.gif',
+                    width='16',
+                    height='16',
+                ),
+                href=f"https://orcid.org/{author['orcid']}"
+            )])
+        )
+        for author in metadata['authors']
+    ]
+    authors = html.Span(children=[
+        e for i in zip(
+            [a for a in authors_list[:-1]],
+            (len(authors_list) - 1) * [', ']
+        ) for e in i
+    ] + [
+        authors_list[-1]
+    ]) if authors_list else 'No authors provided'
+
+    meta_card = html.Div(
+        id='meta-card',
         children=[
-            html.H5('PIK Interactive Webapp'),
-            html.H3(title),
+            html.H5(
+                id='meta-heading',
+                children='PIK Interactive Webapp',
+            ),
+            html.H3(
+                id='meta-title',
+                children=metadata['title'],
+            ),
             html.Div(
-                id='desc',
-                children=desc,
-            ) if desc is not None else None,
+                id='meta-authors',
+                children=authors,
+            ),
             html.Div(
-                id='auth',
-                children=', '.join(authors),
-            ) if authors is not None else None,
+                id='meta-date',
+                children=f"Published: {datetime.strptime(metadata['date'], '%Y-%m-%d').strftime('%d %b %Y')}",
+            ),
             html.Div(
-                id='date',
-                children=f"Published on {date}",
-            ) if date is not None else None,
+                id='meta-doi',
+                children=[
+                    html.Span('DOI: '),
+                    html.A(metadata['doi'], href=f"https://doi.org/{metadata['doi']}"),
+                ],
+            ) if 'doi' in metadata else None,
+            html.Div(
+                id='meta-license',
+                children=[
+                    html.Span('License: '),
+                    html.A(metadata['license']['name'], href=metadata['license']['link']),
+                ],
+            ) if 'doi' in metadata else None,
+            html.Div(
+                id='meta-abstract',
+                children=metadata['abstract'],
+            ),
+            html.Button(id='btn-about', n_clicks=0, children='ABOUT', className='btn btn-primary'),
         ],
         className='side-card elements-card',
+    )
+
+    # define modal window for about details
+    about_modal = dbc.Modal(
+        [
+            dbc.ModalHeader(html.B('About this webapp')),
+            dbc.ModalBody(
+                [
+                    html.Div(
+                        children=metadata['about'],
+                    ),
+                    html.Div(
+                        children=[
+                            html.B('Cite as:'),
+                            ' ' + metadata['citeas'],
+                        ],
+                    ),
+                    html.Div(
+                        children=[
+                            html.B('Published:'),
+                            ' ' + datetime.strptime(metadata['date'], '%Y-%m-%d').strftime('%d %b %Y'),
+                        ],
+                    ),
+                    html.Div(
+                        children=[
+                            html.B('Version:'),
+                            ' ' + metadata['version'],
+                        ],
+                    ) if 'version' in metadata else None,
+                    html.Div(
+                        children=[
+                            html.B('DOI:'),
+                            ' ',
+                            html.A(metadata['doi'], href=f"https://doi.org/{metadata['doi']}"),
+                        ],
+                    ) if 'doi' in metadata else None,
+                    html.Div(
+                        children=[
+                            html.B('License:'),
+                            ' ',
+                            html.A(metadata['license']['name'], href=metadata['license']['link']),
+                        ],
+                    ) if 'license' in metadata else None,
+                ]
+            ),
+        ],
+        id='about-modal',
     )
 
     # define control cards
@@ -108,7 +200,7 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
                                 href='https://www.pik-potsdam.de/',
                             ),
                             html.Div(
-                                html.B(title),
+                                html.B(metadata['title']),
                                 className='app-title',
                             ),
                             *page_divs,
@@ -126,7 +218,7 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
             html.Div(
                 id='left-column',
                 className='four columns',
-                children=[summary] + ctrl_divs
+                children=[meta_card] + ctrl_divs
             ),
 
             # right column
@@ -138,10 +230,12 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
 
             # modals
             ctrl_tables_modal,
+            about_modal,
 
             # dcc locations and stores
             dcc.Location(id='url', refresh=False),
             dcc.Store(id='ctrl-tables-modal-open', storage_type='session', data=''),
+            dcc.Store(id='about-modal-open', storage_type='session', data=''),
         ],
     )
 
