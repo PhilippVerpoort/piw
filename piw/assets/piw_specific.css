@@ -115,19 +115,12 @@ H5, H3 {
     margin-top: 10px;
 }
 
-#summary-card div#auth {
+#meta-authors {
     font-weight: bold;
-    font-size: 10px;
 }
 
-.scenario-buttons {
-    margin-right: 5px;
-}
-
-#simple-update,
-#advanced-update {
-    background-color: #e47f37;
-    color: #fff
+#meta-date, #meta-doi, #meta-license {
+    font-size: 12px;
 }
 
 .header-left-side {
@@ -139,7 +132,7 @@ display: flex;
     text-align: right;
     margin-left: auto;
 }
-    
+
 .header-right-side > div {
     margin-left: 1em;
 }
@@ -195,12 +188,12 @@ display: flex;
     .annotation-text {
         font-size: 0.8rem !important;
     }
-    
+
     #banner {
         display: block;
         height: 14rem;
     }
-    
+
     #banner > div, #banner > a {
         margin-top: 1rem;
         margin-bottom: 1rem;

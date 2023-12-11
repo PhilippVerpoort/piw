@@ -277,7 +277,6 @@ class Webapp(ABC):
         self._dash_app = Dash(
             f"piw--{self._piw_id}",
             title=self._title,
-            external_stylesheets=[dbc.themes.BOOTSTRAP],
             meta_tags=[{'name': 'viewport', 'content': 'width=device-width, initial-scale=1'}],
             requests_pathname_prefix=self._root_path,
             routes_pathname_prefix='/',
