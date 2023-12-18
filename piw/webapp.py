@@ -10,7 +10,6 @@ import plotly.io as pio
 import plotly.graph_objects as go
 from dash import Dash
 from dash.dependencies import Input, State
-import dash_bootstrap_components as dbc
 
 from piw.abstract_plot import AbstractPlot
 from piw.callbacks import set_callbacks
@@ -33,7 +32,7 @@ class Webapp(ABC):
                  load: Optional[list[Callable]] = None, ctrls: Optional[list[Callable]] = None,
                  update: Optional[list[Callable]] = None, ctrls_tables_modal: Optional[dict[str, list[str]]] = None,
                  generate_args: Optional[list[Input | State]] = None, proc: Optional[list[Callable]] = None,
-                 glob_cfg: Optional[dict] = None, styles: Optional[dict] = None,
+                 glob_cfg: Optional[dict] = None, styles: Optional[dict] = None, lang: str = 'en',
                  plots: Optional[list[Type[AbstractPlot]]] = None, output: Optional[str | Path] = None,
                  sort_figs: Optional[list[str]] = None, default_template: str = 'piw', input_caching: bool = False,
                  input_caching_dir: Optional[str | Path] = None, debug: bool = False):
@@ -70,6 +69,9 @@ class Webapp(ABC):
             raise Exception(f"Argument 'globCfg' of class Webapp has to be a dict.")
         if not (styles is None or isinstance(styles, dict)):
             raise Exception(f"Argument 'styles' of class Webapp has to be a dict.")
+        if not (isinstance(lang, str)):
+            raise Exception(f"Argument 'lang' of class Webapp must be a ISO 639-1 Language Code. "
+                            f"See here: https://www.w3schools.com/tags/ref_language_codes.asp")
         if not (plots is not None or (isinstance(plots, list) and
                                       all(isinstance(p, type(AbstractPlot)) for p in plots))):
             raise Exception(f"Argument 'plots' must be a list of AbstractPlot objects.")
@@ -102,6 +104,7 @@ class Webapp(ABC):
         self._proc: list[Callable] = proc if proc is not None else []
         self._glob_cfg: dict = glob_cfg if glob_cfg is not None else {}
         self._styles: dict = styles or default_styles
+        self._lang: str = lang
         self._plots: list[AbstractPlot] = ([Plot(self._glob_cfg, self._styles) for Plot in plots]
                                            if plots is not None else
                                            [])
@@ -289,6 +292,12 @@ class Webapp(ABC):
             requests_pathname_prefix=self._root_path,
             routes_pathname_prefix='/',
             assets_folder=str(ASSETS),
+        )
+
+        # set application language
+        self._dash_app.index_string = self._dash_app.index_string.replace(
+            "<html>",
+            f"<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='{self._lang}' lang='{self._lang}'>",
         )
 
         # turn on debug if requested
