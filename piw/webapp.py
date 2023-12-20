@@ -25,6 +25,11 @@ ALLOWED_EXPORT_FORMATS: Final[list[str]] = ['png', 'svg', 'pdf']
 ASSETS: Final[Path] = Path(__file__).parent / 'assets'
 
 
+# fix bug with notification box about mathjax
+# see: https://github.com/plotly/plotly.py/issues/3469
+pio.kaleido.scope.mathjax = None
+
+
 # class Webapp
 class Webapp(ABC):
     def __init__(self, piw_id: str, metadata: Optional[dict], root_path: str = '/',
