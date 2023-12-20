@@ -77,7 +77,9 @@ class AbstractPlot(ABC):
 
     # add placeholder plots for webapp for plots that were not produced
     def _add_placeholders(self, subfigs: dict):
-        for subfig_name in self.subfigs:
+        for subfig_name, subfig_specs in self.subfigs.items():
+            if 'display' not in self.figs[subfig_specs['parent']]:
+                continue
             if subfig_name not in subfigs or subfigs[subfig_name] is None:
                 f = go.Figure()
                 f.add_annotation(

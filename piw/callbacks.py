@@ -8,12 +8,9 @@ from dash.dependencies import Input, Output, State
 from piw.abstract_plot import AbstractPlot
 
 
-def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: dict, generate_args: list,
-                  def_inputs: dict, ctrls_tables_modal: dict[str, list[str]], update: list[Callable],
-                  display: Callable, root_path: str):
-    # create lists containing all fig_names and subfig_names
-    fig_names = [figName for plot in plots for figName in plot.figs]
-    subfig_names = [subfigName for plot in plots for subfigName in plot.subfigs]
+def set_callbacks(dash_app: Dash, figs_displayed: dict[str, dict], subfigs_displayed: dict[str, dict],
+                  subfig_plots_init: dict, generate_args: list, def_inputs: dict,
+                  ctrls_tables_modal: dict[str, list[str]], update: list[Callable], display: Callable, root_path: str):
 
     # helper function for stripping root path off routes
     def _strip_route(route: str) -> str:
@@ -23,7 +20,7 @@ def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: 
 
     # show/hide figure cards
     @dash_app.callback(
-        [*(Output(f"card-{fig_name}", 'style') for fig_name in fig_names)],
+        [*(Output(f"card-{fig_name}", 'style') for fig_name in figs_displayed)],
         [Input('url', 'pathname')]
     )
     def show_fig_cards(route):
@@ -33,14 +30,13 @@ def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: 
         route = _strip_route(route)
 
         return [
-            show if 'display' in fig_specs and route in fig_specs['display'] else hide
-            for plot in plots
-            for fig_name, fig_specs in plot.figs.items()
+            show if route in fig_specs['display'] else hide
+            for fig_name, fig_specs in figs_displayed.items()
         ]
 
     # general callback for (re-)generating plots
     @dash_app.callback(
-        [*(Output(subfig_name, 'figure') for subfig_name in subfig_names), ],
+        [*(Output(subfig_name, 'figure') for subfig_name in subfigs_displayed), ],
         [*generate_args,
          State('url', 'pathname'), ])
     def callback_update(*args):
@@ -64,16 +60,18 @@ def set_callbacks(dash_app: Dash, plots: list[AbstractPlot], subfig_plots_init: 
             # get list of figs required
             fig_names_req = [
                 fig_name
-                for plot in plots
-                for fig_name, fig_specs in plot.figs.items()
-                if 'display' in fig_specs and route in fig_specs['display']
+                for fig_name, fig_specs in figs_displayed.items()
+                if route in fig_specs['display']
             ]
 
             # get figures
             subfigs_generated = display(inputs_updated, fig_names_req)
 
         # sort generated subfigs and return
-        subfigs_return = dict(sorted(subfigs_generated.items(), key=lambda t: subfig_names.index(t[0])))
+        subfigs_return = dict(sorted(
+            ((k, v) for k, v in subfigs_generated.items() if k in subfigs_displayed),
+            key=lambda t: (list(subfigs_displayed.keys())).index(t[0])),
+        )
         return *subfigs_return.values(),
 
     # callback for about modal

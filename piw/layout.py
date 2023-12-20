@@ -17,7 +17,7 @@ DEFLINKS: Final[dict[str, str]] = {
 
 # create app layout
 def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], ctrls: list,
-                  plots: list[AbstractPlot], sort_figs: Optional[list], metadata: dict, def_inputs: dict):
+                  figs_displayed: dict[str, dict], sort_figs: Optional[list], metadata: dict, def_inputs: dict):
     # define page tabs
     page_divs = [
         html.Div(
@@ -225,7 +225,7 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
             html.Div(
                 id='right-column',
                 className='eight columns',
-                children=figure_cards(plots, sort_figs),
+                children=figure_cards(figs_displayed, sort_figs),
             ),
 
             # modals
@@ -241,52 +241,51 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
 
 
 # create all figure cards
-def figure_cards(plots: list[AbstractPlot], sort_figs: Optional[list]):
+def figure_cards(figs_displayed: dict[str, dict], sort_figs: Optional[list]):
     cards = {}
 
-    for Plot in plots:
-        for fig_name, fig_specs in Plot.figs.items():
-            if 'subfigs' in fig_specs:
-                subfigs = [
-                    (subfigName, subfigSpecs['size']['webapp']['width'], subfigSpecs['size']['webapp']['height'])
-                    for subfigName, subfigSpecs in fig_specs['subfigs'].items()
-                ]
-            else:
-                subfigs = [(fig_name, fig_specs['size']['webapp']['width'], fig_specs['size']['webapp']['height'])]
+    for fig_name, fig_specs in figs_displayed.items():
+        if 'subfigs' in fig_specs:
+            subfigs = [
+                (subfigName, subfigSpecs['size']['webapp']['width'], subfigSpecs['size']['webapp']['height'])
+                for subfigName, subfigSpecs in fig_specs['subfigs'].items()
+            ]
+        else:
+            subfigs = [(fig_name, fig_specs['size']['webapp']['width'], fig_specs['size']['webapp']['height'])]
 
-            display_default = 'display' in fig_specs and '' in fig_specs['display']
+        display_default = '' in fig_specs['display']
 
-            cards[fig_name] = html.Div(
-                id=f"card-{fig_name}",
-                className='fig-card',
-                children=[
-                    *(
-                        dcc.Loading(
-                            children=[
-                                dcc.Graph(
-                                    id=sub_fig_name,
-                                    style={
-                                        'width': f"{sub_fig_width}%",
-                                        'height': sub_fig_height,
-                                        'float': 'left',
-                                    },
-                                ),
-                            ],
-                            type='circle',
-                            style={
-                                'width': f"{sub_fig_width}%",
-                                'height': sub_fig_height,
-                                'float': 'left',
-                            },
-                        )
-                        for sub_fig_name, sub_fig_width, sub_fig_height in subfigs
-                    ),
-                    html.Hr(),
-                    html.B(f"{fig_specs['name']} | {fig_specs['title']}"),
-                    html.P(fig_specs['desc']),
-                ],
-                style={} if display_default else {'display': 'none'},
-            )
+        cards[fig_name] = html.Div(
+            id=f"card-{fig_name}",
+            className='fig-card',
+            children=[
+                *(
+                    dcc.Loading(
+                        children=[
+                            dcc.Graph(
+                                id=sub_fig_name,
+                                style={
+                                    'width': f"{sub_fig_width}%",
+                                    'height': sub_fig_height,
+                                    'float': 'left',
+                                },
+                            ),
+                        ],
+                        type='circle',
+                        style={
+                            'width': f"{sub_fig_width}%",
+                            'height': sub_fig_height,
+                            'float': 'left',
+                        },
+                    )
+                    for sub_fig_name, sub_fig_width, sub_fig_height in subfigs
+                ),
+                html.Hr(),
+                html.B(f"{fig_specs['name']} | {fig_specs['title']}"),
+                html.P(fig_specs['desc']),
+            ],
+            style={} if display_default else {'display': 'none'},
+        )
 
     if sort_figs is None:
         return list(cards.values())

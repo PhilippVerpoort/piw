@@ -166,13 +166,27 @@ class Webapp(ABC):
         # create Dash app
         self._create_dash_app()
 
+        # define displayed figures
+        figs_displayed = {
+            fig_name: fig_specs
+            for plot in self._plots
+            for fig_name, fig_specs in plot.figs.items()
+            if 'display' in fig_specs
+        }
+        subfigs_displayed = {
+            subfig_name: subfig_specs
+            for plot in self._plots
+            for subfig_name, subfig_specs in plot.subfigs.items()
+            if 'display' in plot.figs[subfig_specs['parent']]
+        }
+
         # create app layout
-        create_layout(self._dash_app, self._pages, self._links, self._ctrls, self._plots, self._sort_figs,
+        create_layout(self._dash_app, self._pages, self._links, self._ctrls, figs_displayed, self._sort_figs,
                       self._metadata, self._def_inputs)
 
         # set callback
-        set_callbacks(self._dash_app, self._plots, subfig_plots_init, self._generate_args, self._def_inputs,
-                      self._ctrls_tables_modal, self._update, self.display, self._root_path)
+        set_callbacks(self._dash_app, figs_displayed, subfigs_displayed, subfig_plots_init, self._generate_args,
+                      self._def_inputs, self._ctrls_tables_modal, self._update, self.display, self._root_path)
 
     # run app locally
     def run(self):
