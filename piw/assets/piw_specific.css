@@ -119,7 +119,7 @@ H5, H3 {
     font-weight: bold;
 }
 
-#meta-date, #meta-doi, #meta-license {
+#meta-date, #meta-doi, #meta-licence, #meta-reference {
     font-size: 12px;
 }
 
@@ -135,6 +135,10 @@ display: flex;
 
 .header-right-side > div {
     margin-left: 1em;
+}
+
+button.btn {
+    margin-right: 1em;
 }
 
 

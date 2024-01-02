@@ -92,21 +92,45 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
                 id='meta-doi',
                 children=[
                     html.Span('DOI: '),
-                    html.A(metadata['doi'], href=f"https://doi.org/{metadata['doi']}"),
+                    html.A(
+                        metadata['doi'],
+                        href=f"https://doi.org/{metadata['doi']}",
+                        target='_blank',
+                    ),
                 ],
             ) if 'doi' in metadata else None,
             html.Div(
-                id='meta-license',
+                id='meta-licence',
                 children=[
-                    html.Span('License: '),
-                    html.A(metadata['license']['name'], href=metadata['license']['link']),
+                    html.Span('Licence: '),
+                    html.A(
+                        metadata['licence']['name'],
+                        href=metadata['licence']['link'],
+                        target='_blank',
+                    ),
                 ],
             ) if 'doi' in metadata else None,
+            html.Div(
+                id='meta-reference',
+                children=['Accompanying: ', metadata['reference_citeas']] +
+                ([
+                    ' DOI: ',
+                    html.A(
+                        metadata['reference_doi'],
+                        href=f"https://doi.org/{metadata['reference_doi']}",
+                        target='_blank',
+                    ),
+                ] if 'reference_doi' in metadata else []),
+            ) if 'reference_citeas' in metadata else None,
             html.Div(
                 id='meta-abstract',
                 children=metadata['abstract'],
             ),
             html.Button(id='btn-about', n_clicks=0, children='ABOUT', className='btn btn-primary'),
+            html.A(
+                html.Button(id='btn-paper', n_clicks=0, children='Paper', className='btn btn-outline-secondary'),
+                href=f"https://doi.org/{metadata['reference_doi']}", target='_blank',
+            ) if 'reference_doi' in metadata else None,
         ],
         className='side-card elements-card',
     )
@@ -147,11 +171,18 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
                     ) if 'doi' in metadata else None,
                     html.Div(
                         children=[
-                            html.B('License:'),
+                            html.B('Licence:'),
                             ' ',
-                            html.A(metadata['license']['name'], href=metadata['license']['link']),
+                            html.A(metadata['licence']['name'], href=metadata['licence']['link']),
                         ],
-                    ) if 'license' in metadata else None,
+                    ) if 'licence' in metadata else None,
+                    html.Div(
+                        children=[html.B('Accompanying:'), ' ', metadata['reference_citeas']] +
+                        ([
+                            ', DOI: ',
+                            html.A(metadata['reference_doi'], href=f"https://doi.org/{metadata['reference_doi']}"),
+                        ] if 'reference_doi' in metadata else []),
+                    ) if 'reference_citeas' in metadata else None,
                 ]
             ),
         ],
