@@ -109,7 +109,7 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
                         target='_blank',
                     ),
                 ],
-            ) if 'doi' in metadata else None,
+            ) if 'licence' in metadata else None,
             html.Div(
                 id='meta-reference',
                 children=['Accompanying: ', metadata['reference_citeas']] +
