@@ -6,11 +6,11 @@ This Python package can be used to host interactive webapps that make research a
 
 ## How to use this library
 
-This package can be added as a dependency via `poetry`:
+This package can be added as a dependency:
 ```commandline
 poetry install git+https://github.com/PhilippVerpoort/piw.git # when using poetry
 # OR
-pip install git+https://github.com/PhilippVerpoort/piw.git # when using pip
+pipenv install git+https://github.com/PhilippVerpoort/piw.git # when using pipenv
 ```
 
 You can then create a webapp via:
@@ -53,6 +53,6 @@ application = webapp.flask_app
 ```
 More details on hosting Flask apps with WSGI can be found [here](https://flask.palletsprojects.com/en/2.0.x/deploying/mod_wsgi/).
 
-A more extensive tutorial on getting started with `piw` will soon be made available. Meanwhile, the following examples may server as a starting point:
+A more extensive tutorial on getting started with `piw` will soon be made available. Meanwhile, the following examples may serve as a starting point:
 * [green-value-chains](https://github.com/PhilippVerpoort/green-value-chains/)
 * [blue-green-H2](https://github.com/PhilippVerpoort/blue-green-H2)
