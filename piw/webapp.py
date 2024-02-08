@@ -311,6 +311,7 @@ class Webapp(ABC):
             requests_pathname_prefix=self._root_path,
             routes_pathname_prefix='/',
             assets_folder=str(ASSETS),
+            external_stylesheets=["https://rsms.me/inter/inter.css"],
         )
 
         # set application language

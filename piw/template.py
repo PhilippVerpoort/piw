@@ -9,7 +9,7 @@ piw_template.update(
         paper_bgcolor='rgba(255, 255, 255, 1.0)',
         plot_bgcolor='rgba(255, 255, 255, 0.0)',
         font_color='black',
-        font_family='Helvetica',
+        font_family='Inter',
     )
 )
 
