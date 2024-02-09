@@ -39,6 +39,7 @@ def create_layout(dash_app: Dash, pages: dict, links: Optional[dict[str, str]], 
                 link_name,
                 href=link_href,
                 className='nav-link',
+                target='_blank',
             ),
         )
         for link_name, link_href in links.items()
