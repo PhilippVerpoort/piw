@@ -1,8 +1,10 @@
-# Potsdam Interactive Webapp (PIW) framework library
+# PIK Interactive Webapp (PIW) framework library
 
 ## Summary
 
 This Python package can be used to host interactive webapps that make research available in an interactive and reusable way.
+
+It is maintained and used at the [Potsdam Institute for Climate Impact Research](https://www.pik-potsdam.de/en), a German research institute conducting integrated research for global sustainability.
 
 ## How to use this library
 
