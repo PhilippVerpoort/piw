@@ -3,6 +3,7 @@ name = "piw"
 description = "Potsdam Interactive Webapp (PIW) framework library"
 version = "0.8.2"
 authors = ["Philipp Verpoort <philipp.verpoort@pik-potsdam.de>"]
+license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
