@@ -1,7 +1,6 @@
 import pickle
 import re
 import warnings
-from abc import ABC
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional, Type, Final
@@ -31,7 +30,7 @@ pio.kaleido.scope.mathjax = None
 
 
 # class Webapp
-class Webapp(ABC):
+class Webapp:
     def __init__(self, piw_id: str, metadata: Optional[dict], root_path: str = '/',
                  pages: Optional[dict[str, str]] = None, links: Optional[dict[str, str]] = None,
                  load: Optional[list[Callable]] = None, ctrls: Optional[list[Callable]] = None,
