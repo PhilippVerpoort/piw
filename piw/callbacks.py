@@ -10,7 +10,8 @@ from piw.abstract_plot import AbstractPlot
 
 def set_callbacks(dash_app: Dash, figs_displayed: dict[str, dict], subfigs_displayed: dict[str, dict],
                   subfig_plots_init: dict, generate_args: list, def_inputs: dict,
-                  ctrls_tables_modal: dict[str, list[str]], update: list[Callable], display: Callable, root_path: str):
+                  ctrls_tables_modal: dict[str, list[str]], ctrls_display: dict[str, list[str]], update: list[Callable],
+                  display: Callable, root_path: str):
 
     # helper function for stripping root path off routes
     def _strip_route(route: str) -> str:
@@ -20,7 +21,10 @@ def set_callbacks(dash_app: Dash, figs_displayed: dict[str, dict], subfigs_displ
 
     # show/hide figure cards
     @dash_app.callback(
-        [*(Output(f"card-{fig_name}", 'style') for fig_name in figs_displayed)],
+        [
+            *(Output(f"card-{fig_name}", 'style') for fig_name in figs_displayed),
+            *(Output(f"card-ctrl-{ctrl_id}", 'style') for ctrl_id in ctrls_display),
+        ],
         [Input('url', 'pathname')]
     )
     def show_fig_cards(route):
@@ -32,6 +36,9 @@ def set_callbacks(dash_app: Dash, figs_displayed: dict[str, dict], subfigs_displ
         return [
             show if route in fig_specs['display'] else hide
             for fig_name, fig_specs in figs_displayed.items()
+        ] + [
+            show if route in ctrl_routes else hide
+            for ctrl_id, ctrl_routes in ctrls_display.items()
         ]
 
     # general callback for (re-)generating plots

@@ -35,11 +35,11 @@ class Webapp:
                  pages: Optional[dict[str, str]] = None, links: Optional[dict[str, str]] = None,
                  load: Optional[list[Callable]] = None, ctrls: Optional[list[Callable]] = None,
                  update: Optional[list[Callable]] = None, ctrls_tables_modal: Optional[dict[str, list[str]]] = None,
-                 generate_args: Optional[list[Input | State]] = None, proc: Optional[list[Callable]] = None,
-                 glob_cfg: Optional[dict] = None, styles: Optional[dict] = None, lang: str = 'en',
-                 plots: Optional[list[Type[AbstractPlot]]] = None, output: Optional[str | Path] = None,
-                 sort_figs: Optional[list[str]] = None, default_template: str = 'piw', input_caching: bool = False,
-                 input_caching_dir: Optional[str | Path] = None, debug: bool = False):
+                 ctrls_display: Optional[dict] = None, generate_args: Optional[list[Input | State]] = None,
+                 proc: Optional[list[Callable]] = None, glob_cfg: Optional[dict] = None,
+                 styles: Optional[dict] = None, lang: str = 'en', plots: Optional[list[Type[AbstractPlot]]] = None,
+                 output: Optional[str | Path] = None, sort_figs: Optional[list[str]] = None, default_template: str = 'piw',
+                 input_caching: bool = False, input_caching_dir: Optional[str | Path] = None, debug: bool = False):
         # check arguments are valid
         if not (isinstance(piw_id, str) and re.match(r"^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$", piw_id)):
             raise Exception(f"Argument 'piw_id' of class Webapp has to be a string containing only lowercase letters, "
@@ -104,6 +104,7 @@ class Webapp:
         self._ctrls: list[Callable] = ctrls if ctrls is not None else []
         self._update: list[Callable] = update if update is not None else []
         self._ctrls_tables_modal: dict[str, list[str]] = ctrls_tables_modal or {}
+        self._ctrls_display: dict[str: list[str]] = ctrls_display or {}
         self._generate_args: list[Input | State] = generate_args if generate_args is not None else []
         self._proc: list[Callable] = proc if proc is not None else []
         self._glob_cfg: dict = glob_cfg if glob_cfg is not None else {}
@@ -185,7 +186,8 @@ class Webapp:
 
         # set callback
         set_callbacks(self._dash_app, figs_displayed, subfigs_displayed, subfig_plots_init, self._generate_args,
-                      self._def_inputs, self._ctrls_tables_modal, self._update, self.display, self._root_path)
+                      self._def_inputs, self._ctrls_tables_modal, self._ctrls_display, self._update, self.display,
+                      self._root_path)
 
     # run app locally
     def run(self):
