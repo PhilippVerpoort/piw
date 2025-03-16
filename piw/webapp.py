@@ -260,18 +260,18 @@ class Webapp:
 
     # load default input data
     def _load_def_inputs(self):
-        # set up caching framework
+        # set path of cache file and load it if it exists
         if self._input_caching:
             if self._input_caching_dir.exists() and self._input_caching_dir.is_dir():
                 self._cache_path = self._input_caching_dir / f"inputs_cached_{self._piw_id.replace('-', '_')}.pkl"
             else:
                 raise Exception('Input caching directory does not exist.')
 
-        # load cached inputs from binary file if it exists
-        if self._input_caching and self._cache_path.exists():
-            with open(self._cache_path, 'rb') as f:
-                self._def_inputs = pickle.load(f)
-                return
+            # load cached inputs from binary file if it exists
+            if self._cache_path.exists():
+                with open(self._cache_path, 'rb') as f:
+                    self._def_inputs = pickle.load(f)
+                    return
 
         # execute all load functions
         inputs: dict = {}
